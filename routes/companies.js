@@ -14,7 +14,6 @@ const companyUpdateSchema = require("../schemas/companyUpdate.json");
 
 const router = new express.Router();
 
-
 /** POST / { company } =>  { company }
  *
  * company should be { handle, name, description, numEmployees, logoUrl }
@@ -52,7 +51,12 @@ router.post("/", ensureLoggedIn, async function (req, res, next) {
 
 router.get("/", async function (req, res, next) {
   try {
-    const companies = await Company.findAll();
+    const name = req.query.name;
+    const minEmployees = req.query.minEmployees;
+    const maxEmployees = req.query.maxEmployees;
+
+    const companies = await Company.findAll(name, minEmployees, maxEmployees);
+
     return res.json({ companies });
   } catch (err) {
     return next(err);
@@ -115,6 +119,5 @@ router.delete("/:handle", ensureLoggedIn, async function (req, res, next) {
     return next(err);
   }
 });
-
 
 module.exports = router;

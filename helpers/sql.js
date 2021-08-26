@@ -1,6 +1,6 @@
 const { BadRequestError } = require("../expressError");
 
-/** allows partial database data update (PATCH for example). */
+/** allows partial database data updates (PATCH for example). */
 
 function sqlForPartialUpdate(dataToUpdate, jsToSql) {
   const keys = Object.keys(dataToUpdate);
