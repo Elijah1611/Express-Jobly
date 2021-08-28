@@ -93,6 +93,7 @@ class Company {
            ${queryFilters}
            ORDER BY name`
     );
+
     return companiesRes.rows;
   }
 
@@ -113,14 +114,28 @@ class Company {
                   logo_url AS "logoUrl"
            FROM companies
            WHERE handle = $1`,
-      [handle]
+      [handle.toLowerCase()]
     );
 
     const company = companyRes.rows[0];
 
     if (!company) throw new NotFoundError(`No company: ${handle}`);
 
-    return company;
+    const jobRes = await db.query(
+      `SELECT title,
+                  salary,
+                  equity,
+                  company_handle AS "companyHandle"
+           FROM jobs
+           WHERE company_handle = $1`,
+      [handle.toLowerCase()]
+    );
+
+    const jobs = jobRes.rows;
+
+    if (!jobs) throw new NotFoundError(`No jobs: ${handle}`);
+
+    return { ...company, jobs: jobs };
   }
 
   /** Update company data with `data`.

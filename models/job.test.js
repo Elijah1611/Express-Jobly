@@ -102,7 +102,7 @@ describe("findAll", function () {
 
 /************************************** get */
 
-describe("findAll", function () {
+describe("get", function () {
   test("get a job by title", async function () {
     let job = await Job.get("job1");
 

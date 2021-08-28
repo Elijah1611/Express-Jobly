@@ -14,7 +14,6 @@ const userUpdateSchema = require("../schemas/userUpdate.json");
 
 const router = express.Router();
 
-
 /** POST / { user }  => { user, token }
  *
  * Adds a new user. This is not the registration endpoint --- instead, this is
@@ -43,6 +42,29 @@ router.post("/", ensureLoggedIn, async function (req, res, next) {
   }
 });
 
+/** POST /[username]/jobs/[jobId] => { application }
+ *
+ * Returns { applied: jobId, jobs: [ username, jobId ] }
+ *
+ * Authorization required: login
+ **/
+
+router.post(
+  "/:username/jobs/:jobId",
+  ensureLoggedIn,
+  async function (req, res, next) {
+    try {
+      const application = await User.applyToJob(
+        req.params.username,
+        req.params.jobId
+      );
+
+      return res.status(201).json({ application });
+    } catch (err) {
+      return next(err);
+    }
+  }
+);
 
 /** GET / => { users: [ {username, firstName, lastName, email }, ... ] }
  *
@@ -60,7 +82,6 @@ router.get("/", ensureLoggedIn, async function (req, res, next) {
   }
 });
 
-
 /** GET /[username] => { user }
  *
  * Returns { username, firstName, lastName, isAdmin }
@@ -76,7 +97,6 @@ router.get("/:username", ensureLoggedIn, async function (req, res, next) {
     return next(err);
   }
 });
-
 
 /** PATCH /[username] { user } => { user }
  *
@@ -103,7 +123,6 @@ router.patch("/:username", ensureLoggedIn, async function (req, res, next) {
   }
 });
 
-
 /** DELETE /[username]  =>  { deleted: username }
  *
  * Authorization required: login
@@ -117,6 +136,5 @@ router.delete("/:username", ensureLoggedIn, async function (req, res, next) {
     return next(err);
   }
 });
-
 
 module.exports = router;

@@ -236,22 +236,17 @@ describe("GET /companies/:handle", function () {
         description: "Desc1",
         numEmployees: 1,
         logoUrl: "http://c1.img",
+        jobs: [
+          {
+            companyHandle: "c1",
+            equity: 0,
+            salary: 50000,
+            title: "job1",
+          },
+        ],
       },
     });
     expect(resp.statusCode).toEqual(200);
-  });
-
-  test("get: fetch a company with handle", async function () {
-    const resp = await request(app).get(`/companies/c2`);
-    expect(resp.body).toEqual({
-      company: {
-        handle: "c2",
-        name: "C2",
-        description: "Desc2",
-        numEmployees: 2,
-        logoUrl: "http://c2.img",
-      },
-    });
   });
 
   test("get: company not found 404", async function () {

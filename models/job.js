@@ -55,16 +55,64 @@ class Job {
     return job;
   }
 
+  /** Creates WHERE query from the url query strings
+   *
+   * Returns SQL WHERE query as a string
+   * */
+
+  static _createWhereSqlQueryFilters(
+    title = "",
+    minSalary = null,
+    hasEquity = ""
+  ) {
+    if (minSalary >= 1000000)
+      throw new BadRequestError(
+        `Salary exceeds salary limit: Less than $1,000,000`
+      );
+
+    const titleSql = `LOWER(title) LIKE '%${title.toLowerCase()}%'`; // WHERE LOWER(title) LIKE '%job%'
+    const minSalarySql = `salary >= ${minSalary}`; // WHERE salary >= number
+    const hasEquitySql = `equity > 0`; // WHERE equity > 0
+    const hasNoEquitySql = `equity = 0`; // WHERE equity = 0
+    const allEquitySql = `equity >= 0`; // WHERE equity >= 0
+
+    const queries = [];
+
+    if (title.length > 0) queries.push(titleSql);
+    if (minSalary) queries.push(minSalarySql);
+
+    if (hasEquity.length == 0) queries.push(allEquitySql);
+    if (hasEquity.toLowerCase() == "true") queries.push(hasEquitySql);
+    if (hasEquity.toLowerCase() == "false") queries.push(hasNoEquitySql);
+
+    let queryFilters = "";
+
+    if (queries.length >= 1) {
+      queryFilters = "WHERE " + queries.join(" AND ");
+    }
+
+    return queryFilters;
+  }
+
   /** Find all jobs.
    *
    * Returns [{ title, salary, equity, companyHandle }, ...]
    * */
 
-  static async findAll() {
+  static async findAll(title, minSalary, hasEquity) {
+    const queryFilters = this._createWhereSqlQueryFilters(
+      title,
+      minSalary,
+      hasEquity
+    );
+
     const jobsRes = await db.query(
       `SELECT title, salary, equity, company_handle AS "companyHandle"
-       FROM jobs`
+       FROM jobs
+       ${queryFilters}
+       `
     );
+
     return jobsRes.rows;
   }
 
@@ -80,8 +128,8 @@ class Job {
     const jobRes = await db.query(
       `SELECT title, salary, equity, company_handle AS "companyHandle"
        FROM jobs
-       WHERE title = $1`,
-      [title]
+       WHERE LOWER(title) = $1`,
+      [title.toLowerCase()]
     );
 
     const job = jobRes.rows[0];
@@ -112,13 +160,13 @@ class Job {
 
     const querySql = `UPDATE jobs
                     SET ${setCols}
-                    WHERE title = ${titleVarIdx}
+                    WHERE LOWER(title) = ${titleVarIdx}
                     RETURNING title,
                               salary,
                               equity,
                               company_handle AS "companyHandle"`;
 
-    const result = await db.query(querySql, [...values, title]);
+    const result = await db.query(querySql, [...values, title.toLowerCase()]);
 
     const job = result.rows[0];
 
@@ -136,9 +184,9 @@ class Job {
     const result = await db.query(
       `DELETE
          FROM jobs
-         WHERE title = $1
+         WHERE LOWER(title) = $1
          RETURNING title`,
-      [title]
+      [title.toLowerCase()]
     );
 
     const job = result.rows[0];
