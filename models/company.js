@@ -39,9 +39,9 @@ class Company {
     return company;
   }
 
-  /** Find all companies.
+  /** Creates WHERE query from the url query strings
    *
-   * Returns [{ handle, name, description, numEmployees, logoUrl }, ...]
+   * Returns SQL WHERE query as a string
    * */
 
   static _createWhereSqlQueryFilters(
@@ -70,6 +70,11 @@ class Company {
 
     return queryFilters;
   }
+
+  /** Find all companies.
+   *
+   * Returns [{ handle, name, description, numEmployees, logoUrl }, ...]
+   * */
 
   static async findAll(name, minEmployees, maxEmployees) {
     const queryFilters = this._createWhereSqlQueryFilters(
